@@ -1,4 +1,4 @@
-;;;; Base64 Encoding/Decoding for LispWorks
+;;;; Base64 Encoding/Decoding for Common Lisp
 ;;;;
 ;;;; Copyright (c) 2013 by Jeffrey Massung
 ;;;;
@@ -25,8 +25,12 @@
 
 (in-package :base64)
 
-(defvar *base64* "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-  "Lookup table of base-64 characters.")
+;;; ----------------------------------------------------
+
+(defparameter *base64*
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+
+;;; ----------------------------------------------------
 
 (defun make-octet (b1 &optional b2 b3)
   "Create a 3-byte octet from 1, 2, or 3 characters."
@@ -36,6 +40,8 @@
             (shift b2 8)
             (shift b3 0))))
 
+;;; ----------------------------------------------------
+
 (defun make-quartet (b1 b2 b3 b4)
   "Create a 3-byte quartet from 2, 3, or 4 encoded characters."
   (flet ((shift (c s)
@@ -44,6 +50,8 @@
             (shift b2 12)
             (shift b3 6)
             (shift b4 0))))
+
+;;; ----------------------------------------------------
 
 (defun encode-octet (out b1 &optional b2 b3 &aux (p (make-octet b1 b2 b3)))
   "Writes the next four characters to the output stream."
@@ -56,6 +64,8 @@
      ((null b3) (format out "~c~c~c=" a b c))
      (t         (format out "~c~c~c~c" a b c d)))))
 
+;;; ----------------------------------------------------
+
 (defun decode-octet (out b1 b2 b3 b4 &aux (p (make-quartet b1 b2 b3 b4)))
   "Writes the next three characters to the output stream."
   (let ((a (code-char (logand (ash p -16) #xff)))
@@ -66,24 +76,29 @@
      ((char= b4 #\=) (format out "~c~c" a b))
      (t              (format out "~c~c~c" a b c)))))
 
+;;; ----------------------------------------------------
+
 (defun base64-encode (string)
   "Encode a simple string of base-chars into a base64 string."
   (with-output-to-string (out)
     (with-input-from-string (in string)
-      (loop :for c1 := (read-char in nil nil)
-            :for c2 := (read-char in nil nil)
-            :for c3 := (read-char in nil nil)
-            :until (null c1)
-            :do (encode-octet out c1 c2 c3)))))
+      (loop
+         for c1 = (read-char in nil nil)
+         for c2 = (read-char in nil nil)
+         for c3 = (read-char in nil nil)
+         until (null c1)
+         do (encode-octet out c1 c2 c3)))))
+
+;;; ----------------------------------------------------
 
 (defun base64-decode (string)
   "Decode a string into a simple string."
   (with-output-to-string (out)
     (with-input-from-string (in string)
-      (loop :for i :from 1 :to (/ (length string) 4)
-            :do (decode-octet out
-                              (read-char in)
-                              (read-char in)
-                              (read-char in)
-                              (read-char in))))))
-                  
+      (loop
+         for i from 1 to (/ (length string) 4)
+         do (decode-octet out
+                          (read-char in)
+                          (read-char in)
+                          (read-char in)
+                          (read-char in))))))

@@ -1,6 +1,6 @@
 ;;;; Base64 Encoding/Decoding for Common Lisp
 ;;;;
-;;;; Copyright (c) 2013 by Jeffrey Massung
+;;;; Copyright (c) Jeffrey Massung
 ;;;;
 ;;;; This file is provided to you under the Apache License,
 ;;;; Version 2.0 (the "License"); you may not use this file
